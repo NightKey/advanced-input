@@ -1,0 +1,7 @@
+*logs*
+*.json
+*__py*
+*.last
+*dist*
+*build*
+*egg-info*
