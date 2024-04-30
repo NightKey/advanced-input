@@ -9,7 +9,9 @@
 
 static struct termios oldt, newt;
 void stop();
-void resume();
+void resume() {
+    tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+}
 
 int kbhit() {
     resume();
@@ -37,13 +39,6 @@ void init() {
     tcgetattr( STDIN_FILENO, &oldt);
     newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr( STDIN_FILENO, TCSANOW, &newt);
-    #endif
-    return;
-}
-
-void resume() {
-    #ifdef LINUX
     tcsetattr( STDIN_FILENO, TCSANOW, &newt);
     #endif
     return;

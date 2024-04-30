@@ -6,6 +6,7 @@ from time import sleep
 from os import path
 from platform import system
 import ctypes
+
 modul_name = "inputExtention" if system() == "Windows" else "inputExtention.so"
 inputExtention = ctypes.CDLL(path.join(path.dirname(__file__), modul_name))
 inputExtentionInit = inputExtention.init
@@ -28,7 +29,7 @@ class AdvancedInput():
             while not is_input_ready() and not self.stop_event.is_set():
                 self.stop_event.wait(.1)
             if self.stop_event.is_set(): break
-            self.last_input = get_character_from_input().decode()
+            self.last_input = get_character_from_input().decode('cp850') #TODO: When C code is OS independent, make sure to cover this as well
             for priority in reversed(PriorityOrder):
                 if (len(self.order[priority]) > 0):
                     currentEvent = self.order[priority].pop()
