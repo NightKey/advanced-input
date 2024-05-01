@@ -8,14 +8,15 @@ from time import sleep
 input_handler = get_advanced_input()
 
 def thread_one():
-    user_input = input_handler.input(priority=PriorityOrder.High)
-    print(user_input)
+    while (user_input := input_handler.read(priority=PriorityOrder.High)) != "\n":
+        print(user_input)
 
 def main():
     backgroundThread = Thread(target=thread_one)
     backgroundThread.start()
     sleep(.1)
-    input_handler.read("Press any character to exit...", PriorityOrder.Low)
+    a = input_handler.read("Press any character to exit...", PriorityOrder.Low)
+    print(a)
     input_handler.stop()
 
 main()

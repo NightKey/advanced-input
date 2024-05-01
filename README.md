@@ -26,3 +26,8 @@ def main():
 This will result in a user input for `thread_one` being created before the `main` function's exit will be available. Normally, this would result in the program exiting, before accepting the user input of `thread_one`. With this, thread one will be in a higher priority than `main`, and that will be the first to be served the user's input. Additionally, `Read()` returns when one character is pressed.
 
 If there are multiple inputs with the same priority, it will return them in a first come last serve method.
+
+## Windows quirks
+
+Due to how Windows works with new line (\r\n), on Windows it is not possible to read the "Carriage Return" (\r) character. It will always return "Line Feed" (\n) instead.
+Due to how Windows console works, the default (utf-8) encoding input will not work with some special character. For it to work, please specify the encoding of your system.

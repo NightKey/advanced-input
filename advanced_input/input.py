@@ -1,4 +1,4 @@
-from sys import stdin
+from sys import stdin, stdout
 from threading import Event, Thread
 from typing import Dict, List
 from .constants import PriorityOrder, EventWithType, EventType
@@ -14,26 +14,33 @@ inputExtentionStop = inputExtention.stop
 is_input_ready = inputExtention.isInputReady
 is_input_ready.restype = ctypes.c_bool
 get_character_from_input = inputExtention.getCharacter
-get_character_from_input.restype = ctypes.c_char
+get_character_from_input.restype = ctypes.c_uint
 
 class AdvancedInput():
-    def __init__(self) -> None:
+    def __init__(self, encoding: str) -> None:
         self.last_input: str = ""
         self.order: Dict[PriorityOrder, List[EventWithType]] = {PriorityOrder.Low: [], PriorityOrder.Normal: [], PriorityOrder.High: []}
         self.stop_event = Event()
         self.main_thread: Thread = None
+        self.encoding = encoding
         inputExtentionInit()
 
     def __loop(self) -> None:
         while not self.stop_event.is_set():
+            counter = 0
             while not is_input_ready() and not self.stop_event.is_set():
+                counter += 1
+                if counter >= 5:
+                    stdout.flush()
+                    counter = 0
                 self.stop_event.wait(.1)
             if self.stop_event.is_set(): break
-            self.last_input = get_character_from_input().decode('cp850') #TODO: When C code is OS independent, make sure to cover this as well
+            tmp: int = get_character_from_input()
+            self.last_input: str = tmp.to_bytes(4, "little").decode(self.encoding).strip("\x00")
             for priority in reversed(PriorityOrder):
                 if (len(self.order[priority]) > 0):
                     currentEvent = self.order[priority].pop()
-                    if currentEvent.type == EventType.LINE:
+                    if currentEvent.type == EventType.LINE and self.last_input not in ["\n"]:
                         self.last_input += stdin.readline().rstrip()
                     currentEvent.set()
                     break
@@ -45,6 +52,7 @@ class AdvancedInput():
         self.main_thread.start()
 
     def stop(self) -> None:
+        if self.main_thread is None: return
         self.stop_event.set()
         self.main_thread.join()
         self.main_thread = None

@@ -17,17 +17,19 @@ int kbhit() {
     resume();
     int bytesWaiting;
     ioctl(STDIN_FILENO, FIONREAD, &bytesWaiting);
-    if (bytesWaiting) {
-        printf("KBHIT!\n");
-    }
     stop();
     return bytesWaiting > 0;
 }
 
 int getch() {
-    printf("Waiting on ch...");
     resume();
-    int ch = getchar();
+    int bytesWaiting;
+    ioctl(STDIN_FILENO, FIONREAD, &bytesWaiting);
+    if (bytesWaiting > 4) {
+        bytesWaiting = 4;
+    }
+    int ch = 0;
+    read(STDIN_FILENO, &ch, bytesWaiting);
     stop();
     return ch;
 }
@@ -48,9 +50,14 @@ int isInputReady() {
     return kbhit();
 }
 
-char getCharacter() {
-    char ch = (char) getch();
-    printf("%c", ch);
+int getCharacter() {
+    int ch = getch();
+    #ifndef LINUX
+    if ((char) ch == '\r') {
+        ch = (int) '\n';
+    }
+    printf("%c", (char) ch);
+    #endif
     return ch;
 }
 
